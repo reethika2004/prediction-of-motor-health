@@ -26,8 +26,8 @@ def preprocess_data(df):
 
     # Ensure the CSV columns match the model input
     expected_cols = ['Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]',
-                     'Torque [Nm]', 'Tool wear [min]', 'TWF', 'HDF', 'PWF', 'OSF', 'RNF',
-                     'Type_L', 'Type_M', 'Type_H']  # Modify column names if needed
+                     'Torque [Nm]', 'Tool wear [min]', 'Machine failure', 'TWF', 'HDF', 'PWF', 'OSF',
+                     'RNF']  # Modify column names if needed
 
     if not all(col in df.columns for col in expected_cols):
         st.error("❌ CSV columns do not match expected format.")
