@@ -23,22 +23,25 @@ def preprocess_data(df):
     # Drop unnecessary columns
     cols_to_drop = ['UDI', 'Product ID', 'Type']
     existing_cols = [col for col in cols_to_drop if col in df.columns]
-    
+
     if existing_cols:
         df = df.drop(existing_cols, axis=1)
 
     # Ensure the CSV columns match the model input
     expected_cols = ['Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]',
-                     'Torque [Nm]', 'Tool wear [min]', 'Machine failure', 'TWF', 'HDF', 'PWF', 'OSF', 'RNF']
+                     'Torque [Nm]', 'Tool wear [min]', 'Machine failure', 'TWF', 'HDF', 
+                     'PWF', 'OSF', 'RNF']
 
-    if not all(col in df.columns for col in expected_cols):
-        st.error("❌ CSV columns do not match expected format.")
+    # Check for missing columns
+    missing_cols = [col for col in expected_cols if col not in df.columns]
+    if missing_cols:
+        st.error(f"❌ Missing columns: {missing_cols}")
         return None
 
     # Select and reorder columns to match the model input
     df = df[expected_cols]
 
-    # Normalize the data
+    # Normalize the data (11 features)
     mean = np.array([298, 310, 1500, 40, 200, 0, 0, 0, 0, 0, 0])
     std = np.array([10, 15, 500, 20, 100, 1, 1, 1, 1, 1, 1])
 
@@ -79,4 +82,3 @@ if uploaded_file:
 
         st.write(f"✅ **Healthy samples:** {healthy_count}")
         st.write(f"❌ **Faulty samples:** {faulty_count}")
-
