@@ -20,32 +20,44 @@ model = load_model()
 
 # Preprocessing Function
 def preprocess_data(df):
-    # Drop the UDI column if it exists
-    if 'UDI' in df.columns:
-        df = df.drop(columns=['UDI'])
+    """
+    Preprocess the CSV data:
+    - Drop 'UDI' and 'Product ID'.
+    - One-hot encode 'Type' (M -> 0, F -> 1).
+    - Ensure proper column order.
+    - Normalize the data using model's training mean and std.
+    """
+    # 🚫 Drop irrelevant columns
+    df = df.drop(['UDI', 'Product ID'], axis=1)
 
-    # Ensure the CSV columns match the model input
-    expected_cols = ['Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]',
-                     'Torque [Nm]', 'Tool wear [min]', 'Machine failure', 'TWF', 'HDF', 'PWF', 'OSF',
-                     'RNF']  # Modify column names if needed
+    # 🔥 One-hot encode 'Type' column
+    df['Type'] = df['Type'].map({'M': 0, 'F': 1})
 
+    # ✅ Ensure correct column order (12 columns)
+    expected_cols = ['Type', 'Air temperature [K]', 'Process temperature [K]', 
+                     'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]', 
+                     'Machine failure', 'TWF', 'HDF', 'PWF', 'OSF', 'RNF']
+
+    # Check for missing columns
     if not all(col in df.columns for col in expected_cols):
         st.error("❌ CSV columns do not match expected format.")
-        return None
+        return None, None
 
-    # Select and reorder columns to match the model input
+    # Reorder columns
     df = df[expected_cols]
 
-    # Normalize the data
-    mean = np.array([298, 310, 1500, 40, 200, 0, 0, 0, 0, 0, 0])
-    std = np.array([10, 15, 500, 20, 100, 1, 1, 1, 1, 1, 1])
+    # 🔥 Normalize the data
+    mean = np.array([0.5, 298, 310, 1500, 40, 200, 0, 0, 0, 0, 0, 0])
+    std = np.array([0.5, 10, 15, 500, 20, 100, 1, 1, 1, 1, 1, 1])
 
     # Apply normalization
     data_normalized = (df.values - mean) / std
+
     return data_normalized, df
 
 # Prediction Function
 def make_predictions(data):
+    """Generate predictions from the model and classify results."""
     predictions = model.predict(data)
     predictions_sigmoid = 1 / (1 + np.exp(-predictions))
 
@@ -64,14 +76,16 @@ if uploaded_file:
     if data_normalized is not None:
         st.write(f"Model expects shape: (n, 12)")
         st.write(f"Preprocessed data shape: {data_normalized.shape}")
+        
         predictions = make_predictions(data_normalized)
 
         # Display Predictions
         st.write("### ✅ Predictions:")
-        result_df = df.copy()  # Include the UDI column if it exists
+        result_df = df.copy()
         result_df['Prediction'] = predictions
         st.dataframe(result_df)
 
         # Downloadable CSV with Predictions
         csv_output = result_df.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Download Results as CSV", data=csv_output, file_name="motor_health_predictions.csv", mime="text/csv")
+
