@@ -20,35 +20,27 @@ model = load_model()
 
 # Preprocessing Function
 def preprocess_data(df):
-    """
-    Preprocess the CSV data:
-    - Drop 'UDI' and 'Product ID'.
-    - One-hot encode 'Type' (M -> 0, F -> 1).
-    - Ensure proper column order.
-    - Normalize the data using model's training mean and std.
-    """
-    # 🚫 Drop irrelevant columns
-    df = df.drop(['UDI', 'Product ID'], axis=1)
+    # Drop unnecessary columns
+    cols_to_drop = ['UDI', 'Product ID', 'Type']
+    existing_cols = [col for col in cols_to_drop if col in df.columns]
+    
+    if existing_cols:
+        df = df.drop(existing_cols, axis=1)
 
-    # 🔥 One-hot encode 'Type' column
-    df['Type'] = df['Type'].map({'M': 0, 'F': 1})
+    # Ensure the CSV columns match the model input
+    expected_cols = ['Air temperature [K]', 'Process temperature [K]', 'Rotational speed [rpm]',
+                     'Torque [Nm]', 'Tool wear [min]', 'Machine failure', 'TWF', 'HDF', 'PWF', 'OSF', 'RNF']
 
-    # ✅ Ensure correct column order (12 columns)
-    expected_cols = ['Type', 'Air temperature [K]', 'Process temperature [K]', 
-                     'Rotational speed [rpm]', 'Torque [Nm]', 'Tool wear [min]', 
-                     'Machine failure', 'TWF', 'HDF', 'PWF', 'OSF', 'RNF']
-
-    # Check for missing columns
     if not all(col in df.columns for col in expected_cols):
         st.error("❌ CSV columns do not match expected format.")
-        return None, None
+        return None
 
-    # Reorder columns
+    # Select and reorder columns to match the model input
     df = df[expected_cols]
 
-    # 🔥 Normalize the data
-    mean = np.array([0.5, 298, 310, 1500, 40, 200, 0, 0, 0, 0, 0, 0])
-    std = np.array([0.5, 10, 15, 500, 20, 100, 1, 1, 1, 1, 1, 1])
+    # Normalize the data
+    mean = np.array([298, 310, 1500, 40, 200, 0, 0, 0, 0, 0, 0])
+    std = np.array([10, 15, 500, 20, 100, 1, 1, 1, 1, 1, 1])
 
     # Apply normalization
     data_normalized = (df.values - mean) / std
@@ -57,12 +49,11 @@ def preprocess_data(df):
 
 # Prediction Function
 def make_predictions(data):
-    """Generate predictions from the model and classify results."""
     predictions = model.predict(data)
     predictions_sigmoid = 1 / (1 + np.exp(-predictions))
 
-    # Classify based on sigmoid output
-    results = ["Healthy" if p < 0.35 else "Faulty" for p in predictions_sigmoid.flatten()]
+    threshold = 0.5
+    results = ["Healthy" if p < threshold else "Faulty" for p in predictions_sigmoid.flatten()]
     return results
 
 # Handle Uploaded CSV File
@@ -71,21 +62,21 @@ if uploaded_file:
     df = pd.read_csv(uploaded_file)
 
     # Preprocess and Predict
-    data_normalized, processed_df = preprocess_data(df)
+    result = preprocess_data(df)
 
-    if data_normalized is not None:
-        st.write(f"Model expects shape: (n, 12)")
-        st.write(f"Preprocessed data shape: {data_normalized.shape}")
-        
+    if result is not None:
+        data_normalized, processed_df = result
         predictions = make_predictions(data_normalized)
 
-        # Display Predictions
+        # Display Results
         st.write("### ✅ Predictions:")
-        result_df = df.copy()
-        result_df['Prediction'] = predictions
-        st.dataframe(result_df)
+        for i, pred in enumerate(predictions, start=1):
+            st.write(f"Sample {i}: **{pred}**")
 
-        # Downloadable CSV with Predictions
-        csv_output = result_df.to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Download Results as CSV", data=csv_output, file_name="motor_health_predictions.csv", mime="text/csv")
+        # Display Summary
+        healthy_count = predictions.count("Healthy")
+        faulty_count = predictions.count("Faulty")
+
+        st.write(f"✅ **Healthy samples:** {healthy_count}")
+        st.write(f"❌ **Faulty samples:** {faulty_count}")
 
