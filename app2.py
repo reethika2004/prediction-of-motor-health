@@ -38,12 +38,15 @@ def preprocess_data(df):
         st.error(f"❌ Missing columns: {missing_cols}")
         return None
 
-    # Select and reorder columns to match the model input
+    # Select and reorder columns
     df = df[expected_cols]
 
-    # Normalize the data (11 features)
-    mean = np.array([298, 310, 1500, 40, 200, 0, 0, 0, 0, 0, 0])
-    std = np.array([10, 15, 500, 20, 100, 1, 1, 1, 1, 1, 1])
+    # Add a dummy column to match the model's expected 12 columns
+    df['Dummy'] = 0  # Add a column with zeros
+
+    # Normalize the data (12 features)
+    mean = np.array([298, 310, 1500, 40, 200, 0, 0, 0, 0, 0, 0, 0])
+    std = np.array([10, 15, 500, 20, 100, 1, 1, 1, 1, 1, 1, 1])
 
     # Apply normalization
     data_normalized = (df.values - mean) / std
