@@ -37,8 +37,8 @@ def preprocess_data(df):
     df = df[expected_cols]
 
     # Normalize the data
-    mean = np.array([298, 310, 1500, 40, 200, 0, 0, 0, 0, 0, 0, 0])
-    std = np.array([10, 15, 500, 20, 100, 1, 1, 1, 1, 1, 1, 1])
+    mean = np.array([298, 310, 1500, 40, 200, 0, 0, 0, 0, 0, 0])
+    std = np.array([10, 15, 500, 20, 100, 1, 1, 1, 1, 1, 1])
 
     # Apply normalization
     data_normalized = (df.values - mean) / std
