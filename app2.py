@@ -62,7 +62,7 @@ def make_predictions(data):
     predictions_sigmoid = 1 / (1 + np.exp(-predictions))
 
     # Classify based on sigmoid output
-    results = ["Healthy" if p < 0.5 else "Faulty" for p in predictions_sigmoid.flatten()]
+    results = ["Healthy" if p < 0.35 else "Faulty" for p in predictions_sigmoid.flatten()]
     return results
 
 # Handle Uploaded CSV File
