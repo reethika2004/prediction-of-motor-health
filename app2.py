@@ -62,6 +62,8 @@ if uploaded_file:
     data_normalized, processed_df = preprocess_data(df)
 
     if data_normalized is not None:
+        st.write(f"Model expects shape: (n, 12)")
+        st.write(f"Preprocessed data shape: {data_normalized.shape}")
         predictions = make_predictions(data_normalized)
 
         # Display Predictions
