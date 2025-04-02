@@ -1,7 +1,10 @@
 streamlit
-tensorflow
 pandas
-numpy
+shap
 matplotlib
 seaborn
 scikit-learn
+tensorflow
+numpy
+ltn
+
