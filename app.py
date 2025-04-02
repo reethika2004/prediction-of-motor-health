@@ -35,10 +35,10 @@ st.title("Motor Health Prediction using LTN & XAI")
 
 # User input for prediction
 st.sidebar.header("Enter Motor Parameters")
-temp = st.sidebar.slider("Temperature", float(X['temperature'].min()), float(X['temperature'].max()), 50.0)
-humidity = st.sidebar.slider("Humidity", float(X['humidity'].min()), float(X['humidity'].max()), 50.0)
+temp = st.sidebar.slider("Temperature", float(X['temperature'].min()), float(X['temperature'].max()), 28.0)
+humidity = st.sidebar.slider("Humidity", float(X['humidity'].min()), float(X['humidity'].max()), 40.0)
 vibration = st.sidebar.slider("Vibration", float(X['vibration'].min()), float(X['vibration'].max()), 1.0)
-speed = st.sidebar.slider("Rotational Speed", float(X['rotational_speed'].min()), float(X['rotational_speed'].max()), 200.0)
+speed = st.sidebar.slider("Rotational Speed", float(X['rotational_speed'].min()), float(X['rotational_speed'].max()), 100.0)
 air_temp = st.sidebar.slider("Air Temperature", float(X['air_temperature'].min()), float(X['air_temperature'].max()), 30.0)
 
 # Prediction function
